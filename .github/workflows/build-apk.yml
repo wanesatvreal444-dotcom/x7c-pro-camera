@@ -38,8 +38,12 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
 
-          p = Path("app/build.gradle.kts")
-          s = p.read_text()
+          if "com.google.guava:guava" not in s:
+    s = s.replace(
+        "dependencies {",
+        'dependencies {\n    implementation("com.google.guava:guava:33.3.1-android")',
+        1
+    )
           if 'jvmTarget = "17"' not in s:
               s = s.replace(
                   "android {\n",
