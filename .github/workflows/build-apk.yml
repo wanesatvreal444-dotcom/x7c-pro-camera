@@ -3,7 +3,8 @@ name: Build X7c Pro Camera APK
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
     paths:
       - 'X7c_Pro_Camera_Enhanced.zip'
       - '.github/workflows/build-apk.yml'
@@ -11,6 +12,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,9 +28,13 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Extract Android project from ZIP
-        run: | unzip -o X7c_Pro_Camera_Enhanced.zip -d extracted test -f extracted/X7c_Pro_Camera/app/build.gradle.kts test -f extracted/X7c_Pro_Camera/app/src/main/java/com/x7cpro/camera/MainActivity.kt 
-      - name: Build debug APK
+      - name: Extract Android project
+        run: |
+          unzip -o X7c_Pro_Camera_Enhanced.zip -d extracted
+          test -f extracted/X7c_Pro_Camera/app/build.gradle.kts
+          test -f extracted/X7c_Pro_Camera/app/src/main/java/com/x7cpro/camera/MainActivity.kt
+
+      - name: Build APK
         working-directory: extracted/X7c_Pro_Camera
         run: gradle assembleDebug
 
