@@ -1,3 +1,4 @@
+
 name: Build X7c Pro Camera APK
 
 on:
@@ -27,17 +28,31 @@ jobs:
         run: |
           unzip -o X7c_Pro_Camera_Enhanced.zip -d extracted
 
-      - name: Fix Java and Kotlin versions
+      - name: Fix Android build settings
         working-directory: extracted/X7c_Pro_Camera
         run: |
           python3 - <<'PY'
           from pathlib import Path
+
           p = Path("app/build.gradle.kts")
           s = p.read_text()
+          if "jvmTarget = \"17\"" not in s:
+              s = s.replace(
+                  "android {\n",
+                  'android {\n    compileOptions {\n        sourceCompatibility = JavaVersion.VERSION_17\n        targetCompatibility = JavaVersion.VERSION_17\n    }\n    kotlinOptions {\n        jvmTarget = "17"\n    }\n',
+                  1
+              )
+          p.write_text(s)
+
+          p = Path("app/src/main/java/com/x7cpro/camera/MainActivity.kt")
+          s = p.read_text()
           s = s.replace(
-              'android {\n',
-              'android {\n    compileOptions {\n        sourceCompatibility = JavaVersion.VERSION_17\n        targetCompatibility = JavaVersion.VERSION_17\n    }\n    kotlinOptions {\n        jvmTarget = "17"\n    }\n',
-              1
+              "import androidx.camera.video.QualitySelector",
+              "import androidx.camera.video.FallbackStrategy\nimport androidx.camera.video.QualitySelector"
+          )
+          s = s.replace(
+              "QualitySelector.FALLBACK_STRATEGY_LOWER_QUALITY",
+              "FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)"
           )
           p.write_text(s)
           PY
