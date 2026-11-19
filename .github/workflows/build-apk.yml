@@ -22,11 +22,15 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.11.1'
+
+      - name: Install Android SDK 36
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Extract project
         run: |
-          unzip -o X7c_Pro_Camera_Enhanced.zip -d extracted
+          unzip -o 'X7c_Pro_Camera_Enhanced.zip' -d extracted
 
       - name: Fix Android build settings
         working-directory: extracted/X7c_Pro_Camera
@@ -36,7 +40,7 @@ jobs:
 
           p = Path("app/build.gradle.kts")
           s = p.read_text()
-          if "jvmTarget = \"17\"" not in s:
+          if 'jvmTarget = "17"' not in s:
               s = s.replace(
                   "android {\n",
                   'android {\n    compileOptions {\n        sourceCompatibility = JavaVersion.VERSION_17\n        targetCompatibility = JavaVersion.VERSION_17\n    }\n    kotlinOptions {\n        jvmTarget = "17"\n    }\n',
@@ -46,10 +50,11 @@ jobs:
 
           p = Path("app/src/main/java/com/x7cpro/camera/MainActivity.kt")
           s = p.read_text()
-          s = s.replace(
-              "import androidx.camera.video.QualitySelector",
-              "import androidx.camera.video.FallbackStrategy\nimport androidx.camera.video.QualitySelector"
-          )
+          if "import androidx.camera.video.FallbackStrategy" not in s:
+              s = s.replace(
+                  "import androidx.camera.video.QualitySelector",
+                  "import androidx.camera.video.FallbackStrategy\nimport androidx.camera.video.QualitySelector"
+              )
           s = s.replace(
               "QualitySelector.FALLBACK_STRATEGY_LOWER_QUALITY",
               "FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)"
